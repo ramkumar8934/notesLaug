@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCA Master Academy - Secure Notes & AI Portal</title>
+    <!-- PDF.js library for Canvas Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        header {
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 2px solid #334155;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .lang-toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 12px;
+            width: auto;
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #334155;
+            border-radius: 6px;
+        }
+        .offer-banner {
+            background: linear-gradient(90deg, #d97706, #dc2626, #d97706);
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border-bottom: 1px solid #f59e0b;
+        }
+        .container {
+            max-width: 720px;
+            margin: 20px auto;
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+        }
+        .hidden { display: none !important; }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            font-size: 15px;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #38bdf8;
+            outline: none;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        .btn-secondary { background: #475569; }
+        .btn-secondary:hover { background: #334155; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        
+        .qr-box { text-align: center; margin: 15px 0; }
+        .qr-box img { max-width: 200px; border-radius: 8px; border: 2px solid #475569; }
+        .brand-title { color: #38bdf8; font-weight: bold; margin-bottom: 5px; }
+        
+        .section-box {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #334155;
+        }
+        .section-box h4 { color: #38bdf8; margin-top: 0; }
+        
+        /* Secure PDF Viewer Container */
+        .pdf-wrapper {
+            position: relative;
+            width: 100%;
+            max-height: 480px;
+            overflow: auto;
+            background: #334155;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        /* Dynamic User Watermark overlay */
+        .watermark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: rgba(239, 68, 68, 0.35);
+            font-weight: bold;
+            transform: rotate(-25deg);
+            z-index: 10;
+            text-align: center;
+        }
+        .admin-badge {
+            background: #dc2626;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            float: right;
+        }
+        .link-text {
+            color: #38bdf8;
+            font-size: 13px;
+            text-align: right;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .link-text:hover { text-decoration: underline; }
+        
+        /* AI Chatbot Box Styles */
+        .ai-chat-box {
+            background: #1e293b;
+            border: 1px solid #38bdf8;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+        }
+        .chat-history {
+            height: 180px;
+            overflow-y: auto;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border: 1px solid #334155;
+        }
+        .chat-msg { margin-bottom: 8px; line-height: 1.4; }
+        .user-msg { color: #38bdf8; text-align: right; }
+        .ai-msg { color: #4ade80; text-align: left; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <header>
+        <span id="portal-title">🎓 BCA Master Academy</span>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()" id="lang-btn">English</button>
+    </header>
+
+    <!-- Dynamic Offer Logo/Banner -->
+    <div id="offer-banner-box" class="offer-banner">
+        🪔 SPECIAL DIWALI OFFER: Get 50% OFF on All Premium BCA Study Notes! 🪔
+    </div>
+
+    <div class="container">
+        
+        <!-- STEP 1: AUTHENTICATION (USER & ADMIN) -->
+        <div id="login-section">
+            <h3 id="txt-login-heading">📱 Login / Registration Portal</h3>
+            <p id="txt-login-sub" style="font-size: 13px; color: #94a3b8;">Enter your mobile number to get started.</p>
+            <input type="tel" id="mobile-number" placeholder="Enter Mobile Number (+91...)" maxlength="10">
+            <button onclick="handleLoginFlow()" id="btn-login-continue">Continue</button>
+            
+            <!-- Standard User Password Login -->
+            <div id="user-pass-box" class="hidden">
+                <input type="password" id="user-password-input" placeholder="Enter Password">
+                <button onclick="verifyUserPassword()" id="btn-user-login">Login</button>
+                <div class="link-text" onclick="triggerForgotPass()" id="txt-forgot-pass">Forgot Password?</div>
+            </div>
+
+            <!-- New User Registration Box -->
+            <div id="user-register-box" class="hidden">
+                <p style="font-size: 13px; color: #f59e0b;" id="txt-reg-notice">First time user! Enter OTP & set your password.</p>
+                <input type="text" id="register-otp" placeholder="Enter OTP (Demo: 123456)">
+                <input type="password" id="new-user-password" placeholder="Create New Password">
+                <button onclick="registerNewUser()" id="btn-register-submit">Register & Proceed</button>
+            </div>
+
+            <!-- Admin Password Login -->
+            <div id="admin-password-box" class="hidden">
+                <p style="font-size: 13px; color: #ef4444;">Admin Security Access Check</p>
+                <input type="password" id="admin-pass-input" placeholder="Enter Admin Password">
+                <button onclick="verifyAdminPassword()">Login as Admin Owner</button>
+                <div class="link-text" onclick="triggerForgotPass()">Forgot Admin Password?</div>
+            </div>
+
+            <!-- Forgot Password OTP Reset Box -->
+            <div id="forgot-otp-box" class="hidden">
+                <p style="font-size: 13px; color: #38bdf8;">OTP sent for password reset.</p>
+                <input type="text" id="reset-otp-input" placeholder="Enter OTP (Demo: 9999)">
+                <input type="password" id="reset-new-pass" placeholder="Enter New Password">
+                <button onclick="executePasswordReset()">Reset Password & Login</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: USER HOME DASHBOARD (Dynamic Content + AI + Profile) -->
+        <div id="notes-section" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 id="welcome-user-title" style="margin-bottom: 2px;">📚 Welcome to Portal</h3>
+                    <p style="font-size: 12px; color: #38bdf8; margin-top: 0;">BCA Master Academy Access</p>
+                </div>
+                <div>
+                    <button onclick="showChangePassModal()" class="btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;" id="btn-change-pass">Change Password</button>
+                </div>
+            </div>
+
+            <p id="txt-explore" style="font-size: 13px; color: #94a3b8;">Explore available sections and notes below:</p>
+            
+            <!-- Default Sections Container -->
+            <div id="home-sections-container"></div>
+
+            <!-- Change Password Modal -->
+            <div id="change-pass-modal" class="hidden section-box" style="border-color: #38bdf8;">
+                <h4>🔐 Change Account Password</h4>
+                <input type="password" id="old-pass-input" placeholder="Current Password">
+                <input type="password" id="change-new-pass" placeholder="New Password">
+                <button onclick="updateAccountPassword()">Update Password</button>
+                <button onclick="hideChangePassModal()" class="btn-secondary">Cancel</button>
+            </div>
+
+            <!-- SECURE CANVAS VIEWER WITH WATERMARK & TRANSLATE TOGGLE -->
+            <div id="viewer-container" class="hidden pdf-wrapper">
+                <div id="watermark" class="watermark-overlay">PROTECTED CONTENT</div>
+                <div style="text-align: right; margin-bottom: 8px;">
+                    <button onclick="togglePdfTranslation()" class="btn-secondary" style="width: auto; padding: 4px 10px; font-size: 11px;" id="btn-translate-pdf">🌐 Switch PDF Language (Hindi / Eng)</button>
+                </div>
+                <div id="pdf-pages-render"></div>
+                <button onclick="closePdfViewer()" class="btn-secondary" style="margin-top: 10px;">Close Note Viewer</button>
+            </div>
+
+            <!-- CHATGPT STYLE AI ASSISTANT (Voice & Easy Language) -->
+            <div class="ai-chat-box">
+                <h4 style="margin-top: 0; color: #38bdf8;" id="txt-ai-title">🤖 BCA AI Doubt Clearing Assistant</h4>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: -5px;" id="txt-ai-sub">Ask any question in easy language (Type or Speak):</p>
+                
+                <div id="chat-history" class="chat-history">
+                    <div class="chat-msg ai-msg">🤖 Namaste! Main aapka BCA AI Assistant hoon. C Programming ya Computer Basics se juda koi bhi sawal poochiye, main ekdam aasan bhasha me samjhaunga!</div>
+                </div>
+
+                <input type="text" id="ai-user-input" placeholder="Type your doubt here (e.g., What is pointer?)...">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="sendAiQuery()" id="btn-ask-ai">Ask AI</button>
+                    <button onclick="startVoiceInput()" class="btn-secondary" style="width: 150px;" id="btn-voice-ai">🎤 Speak Doubt</button>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="btn-secondary" style="margin-top: 20px;" id="btn-logout">Log Out</button>
+        </div>
+
+        <!-- STEP 3: PAYMENT GATEWAY (Dynamic Price + QR + Expiry Info) -->
+        <div id="payment-section" class="hidden">
+            <h3>💳 Unlock Course Notes</h3>
+            <div class="brand-title">BCA Master Academy Gateway</div>
+            <p style="font-size: 13px; color: #94a3b8;">To unlock <b id="target-note-name" style="color:#38bdf8;"></b>, please pay <span id="display-section-price" style="color: #38bdf8; font-weight: bold;">₹49</span>:</p>
+            <p style="font-size: 12px; color: #f59e0b; margin-top: -5px;">⏳ Validity: <span id="display-section-validity">30</span> Days Access</p>
+
+            <div class="qr-box">
+                <img id="active-scanner-img" src="https://via.placeholder.com/200?text=BCA+Master+Academy+QR" alt="Payment QR">
+            </div>
+            
+            <input type="text" id="txn-id" placeholder="Enter UPI Transaction Reference ID (UTR)">
+            <button onclick="submitPayment()">Submit & Unlock Access</button>
+            <button onclick="cancelPayment()" class="btn-secondary">Back to Home</button>
+        </div>
+
+        <!-- STEP 4: OWNER ADMIN CONTROL PANEL -->
+        <div id="admin-section" class="hidden">
+            <h3>🔐 Admin Owner Control Dashboard <span class="admin-badge">OWNER</span></h3>
+            <p style="font-size: 13px; color: #94a3b8;">Full CMS: Manage sections, set prices, edit offers, set validity limits, and modify PDF pages.</p>
+            
+            <!-- 1. Edit Offer Banner Logo -->
+            <div class="section-box" style="border-color: #f59e0b;">
+                <h4>1. 🪔 Edit Top Diwali / Special Offer Banner</h4>
+                <input type="text" id="admin-offer-input" placeholder="Enter offer message (e.g. SPECIAL DIWALI OFFER 50% OFF)">
+                <button onclick="updateOfferBanner()" class="btn-success">Update Top Offer Banner</button>
+                <button onclick="toggleOfferVisibility()" class="btn-secondary">Toggle Offer Show/Hide</button>
+            </div>
+
+            <!-- 2. Add New Section, Price & Validity Limit -->
+            <div class="section-box">
+                <h4>2. Add Section, Individual Price & Expiry Validity Limit</h4>
+                <input type="text" id="admin-sec-title" placeholder="Section Name (e.g., Programming in C)">
+                <input type="text" id="admin-note-title" placeholder="Note Title (e.g., Arrays in C)">
+                <input type="number" id="admin-note-price" placeholder="Set Price (₹ e.g. 49)">
+                <input type="number" id="admin-note-validity" placeholder="Set Validity in Days (e.g. 30)">
+                <button onclick="addNewSectionByAdmin()">Publish Section & Note</button>
+            </div>
+
+            <!-- 3. Manage PDF Pages -->
+            <div class="section-box">
+                <h4>3. Manage PDF Pages (Add / Remove Pages)</h4>
+                <select id="admin-pdf-select"></select>
+                <div id="admin-page-list" style="margin: 8px 0;"></div>
+                <button onclick="addPageToSelectedPdf()">+ Add New Page to Note</button>
+            </div>
+            
+            <button onclick="location.reload()" class="btn-danger" style="margin-top: 15px;">Log Out Admin</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Security Shield: Block Inspect, Copy, and Shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode == 123 || 
+               (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || 
+               (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83 || e.keyCode == 80))) {
+                e.preventDefault();
+                alert("Security Warning: Protected Action!");
+                return false;
+            }
+        });
+
+        // App States
+        let activeUserMobile = "";
+        let userPurchases = {}; // { mobile: { noteTitle: expiryTimestamp } }
+        let currentCheckoutNote = "";
+        let currentCheckoutPrice = "49";
+        let currentCheckoutValidity = 30;
+        let currentLanguage = "HI"; // "HI" or "EN"
+        let isPdfTranslated = false;
+        
+        // Owner Credentials
+        const ADMIN_NUMBER = "8934970357"; 
+        let adminPassword = "bca@123";
+
+        // Dynamic Databases
+        let sectionsDatabase = [
+            {
+                sectionName: "1. Programming in C",
+                notes: [
+                    { title: "C Language Basics & Syntax", price: "49", validityDays: 30, qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2, 3] },
+                    { title: "Pointers & Arrays in C", price: "99", validityDays: 60, qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2] }
+                ]
+            },
+            {
+                sectionName: "2. Computer Basic Knowledge",
+                notes: [
+                    { title: "Hardware & Software Fundamentals", price: "39", validityDays: 30, qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2, 3] }
+                ]
+            },
+            {
+                sectionName: "3. Programming Code Solutions",
+                notes: [
+                    { title: "Important C Programs & Logic", price: "79", validityDays: 90, qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2] }
+                ]
+            }
+        ];
+
+        let registeredUsers = {}; // { mobile: password }
+
+        // Language Toggle System
+        function toggleLanguage() {
+            if(currentLanguage === "HI") {
+                currentLanguage = "EN";
+                document.getElementById('lang-btn').innerText = "हिंदी";
+                applyEnglishUI();
+            } else {
+                currentLanguage = "HI";
+                document.getElementById('lang-btn').innerText = "English";
+                applyHindiUI();
+            }
+        }
+
+        function applyEnglishUI() {
+            document.getElementById('portal-title').innerText = "🎓 BCA Master Academy";
+            document.getElementById('txt-login-heading').innerText = "📱 Login / Registration Portal";
+            document.getElementById('txt-login-sub').innerText = "Enter mobile number to get started.";
+            document.getElementById('btn-login-continue').innerText = "Continue";
+            document.getElementById('btn-user-login').innerText = "Login";
+            document.getElementById('txt-forgot-pass').innerText = "Forgot Password?";
+            document.getElementById('txt-explore').innerText = "Explore available sections and notes below:";
+            document.getElementById('btn-change-pass').innerText = "Change Password";
+            document.getElementById('btn-ask-ai').innerText = "Ask AI";
+            document.getElementById('btn-voice-ai').innerText = "🎤 Speak Doubt";
+            document.getElementById('btn-logout').innerText = "Log Out";
+        }
+
+        function applyHindiUI() {
+            document.getElementById('portal-title').innerText = "🎓 BCA Master Academy";
+            document.getElementById('txt-login-heading').innerText = "📱 लॉगिन एवं पंजीकरण पोर्टल";
+            document.getElementById('txt-login-sub').innerText = "शुरू करने के लिए अपना मोबाइल नंबर दर्ज करें।";
+            document.getElementById('btn-login-continue').innerText = "आगे बढ़ें";
+            document.getElementById('btn-user-login').innerText = "लॉगिन करें";
+            document.getElementById('txt-forgot-pass').innerText = "पासवर्ड भूल गए?";
+            document.getElementById('txt-explore').innerText = "नीचे दिए गए अनुभाग और नोट्स देखें:";
+            document.getElementById('btn-change-pass').innerText = "पासवर्ड बदलें";
+            document.getElementById('btn-ask-ai').innerText = "AI से पूछें";
+            document.getElementById('btn-voice-ai').innerText = "🎤 बोलकर पूछें";
+            document.getElementById('btn-logout').innerText = "लॉग आउट";
+        }
+
+        // Login Handler
+        function handleLoginFlow() {
+            let mobile = document.getElementById('mobile-number').value;
+            if(mobile.length < 10) { alert("Please enter a valid 10-digit mobile number!"); return; }
+            activeUserMobile = mobile;
+            
+            hideAllLoginSubBoxes();
+
+            if(mobile === ADMIN_NUMBER) {
+                document.getElementById('admin-password-box').classList.remove('hidden');
+            } else if(registeredUsers[mobile]) {
+                document.getElementById('user-pass-box').classList.remove('hidden');
+            } else {
+                document.getElementById('user-register-box').classList.remove('hidden');
+                alert("OTP sent to " + mobile + " (Demo OTP: 123456)");
+            }
+        }
+
+        function verifyUserPassword() {
+            let pass = document.getElementById('user-password-input').value;
+            if(pass === registeredUsers[activeUserMobile]) {
+                alert("Login Successful!");
+                openUserDashboard();
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+
+        function registerNewUser() {
+            let otp = document.getElementById('register-otp').value;
+            let pass = document.getElementById('new-user-password').value;
+            if(otp === "123456" && pass) {
+                registeredUsers[activeUserMobile] = pass;
+                alert("Account created successfully!");
+                openUserDashboard();
+            } else {
+                alert("Invalid OTP or Password!");
+            }
+        }
+
+        function verifyAdminPassword() {
+            let pass = document.getElementById('admin-pass-input').value;
+            if(pass === adminPassword) {
+                alert("Admin Access Unlocked!");
+                showSection('admin-section');
+                loadAdminPdfDropdown();
+            } else {
+                alert("Incorrect Admin Password!");
+            }
+        }
+
+        function triggerForgotPass() {
+            alert("OTP sent to " + activeUserMobile + " (Demo OTP: 9999)");
+            hideAllLoginSubBoxes();
+            document.getElementById('forgot-otp-box').classList.remove('hidden');
+        }
+
+        function executePasswordReset() {
+            let otp = document.getElementById('reset-otp-input').value;
+            let newPass = document.getElementById('reset-new-pass').value;
+            if(otp === "9999" && newPass) {
+                if(activeUserMobile === ADMIN_NUMBER) {
+                    adminPassword = newPass;
+                    alert("Admin password updated!");
+                    showSection('admin-section');
+                    loadAdminPdfDropdown();
+                } else {
+                    registeredUsers[activeUserMobile] = newPass;
+                    alert("Password reset successfully!");
+                    openUserDashboard();
+                }
+            } else {
+                alert("Invalid OTP or empty password!");
+            }
+        }
+
+        function openUserDashboard() {
+            document.getElementById('welcome-user-title').innerText = "📚 Welcome, User (" + activeUserMobile + ")";
+            document.getElementById('watermark').innerHTML = "BCA MASTER ACADEMY<br>LICENSED TO: " + activeUserMobile;
+            renderUserHomeSections();
+            showSection('notes-section');
+        }
+
+        // Render Home Sections Dynamically with Expiry Check
+        function renderUserHomeSections() {
+            let container = document.getElementById('home-sections-container');
+            container.innerHTML = "";
+
+            sectionsDatabase.forEach(sec => {
+                let sDiv = document.createElement('div');
+                sDiv.className = "section-box";
+                
+                let html = `<h4>${sec.sectionName}</h4>`;
+                sec.notes.forEach(note => {
+                    let isUnlocked = checkCourseAccessUnlocked(note.title);
+                    let badge = isUnlocked ? " ✅ [Unlocked]" : " 🔒 (₹" + note.price + " - " + note.validityDays + " Days)";
+                    html += `<button onclick="handleNoteClick('${note.title}', '${note.price}', '${note.validityDays}', '${note.qr}')">📖 ${note.title} ${badge}</button>`;
+                });
+                
+                sDiv.innerHTML = html;
+                container.appendChild(sDiv);
+            });
+        }
+
+        // Expiry Limit Check
+        function checkCourseAccessUnlocked(noteTitle) {
+            if(activeUserMobile === ADMIN_NUMBER) return true;
+            if(userPurchases[activeUserMobile] && userPurchases[activeUserMobile][noteTitle]) {
+                let expiryTime = userPurchases[activeUserMobile][noteTitle];
+                if(Date.now() < expiryTime) {
+                    return true; // Access valid
+                }
+            }
+            return false; // Expired or not purchased
+        }
+
+        // Note Click & Payment
+        function handleNoteClick(noteTitle, price, validityDays, qrUrl) {
+            currentCheckoutNote = noteTitle;
+            currentCheckoutPrice = price;
+            currentCheckoutValidity = validityDays;
+
+            if(checkCourseAccessUnlocked(noteTitle)) {
+                renderPdfCanvas(noteTitle);
+            } else {
+                document.getElementById('target-note-name').innerText = noteTitle;
+                document.getElementById('display-section-price').innerText = "₹" + price;
+                document.getElementById('display-section-validity').innerText = validityDays;
+                document.getElementById('active-scanner-img').src = qrUrl;
+                showSection('payment-section');
+            }
+        }
+
+        function submitPayment() {
+            let txn = document.getElementById('txn-id').value;
+            if(!txn) { alert("Please enter Transaction Reference (UTR) ID."); return; }
+            
+            if(!userPurchases[activeUserMobile]) userPurchases[activeUserMobile] = {};
+            
+            // Set Expiry Timestamp based on validity days
+            let expiryTimestamp = Date.now() + (parseInt(currentCheckoutValidity) * 24 * 60 * 60 * 1000);
+            userPurchases[activeUserMobile][currentCheckoutNote] = expiryTimestamp;
+
+            alert("Payment verified! Unlocked for " + currentCheckoutValidity + " Days.");
+            showSection('notes-section');
+            renderUserHomeSections();
+            renderPdfCanvas(currentCheckoutNote);
+        }
+
+        function cancelPayment() {
+            showSection('notes-section');
+        }
+
+        // Secure Canvas Rendering & Translation Switch
+        function renderPdfCanvas(noteTitle) {
+            let container = document.getElementById('pdf-pages-render');
+            container.innerHTML = "";
+            document.getElementById('viewer-container').classList.remove('hidden');
+
+            let targetPages = [1, 2];
+            sectionsDatabase.forEach(sec => {
+                sec.notes.forEach(n => {
+                    if(n.title === noteTitle) targetPages = n.pages;
+                });
+            });
+
+            targetPages.forEach(pNum => {
+                let pTag = document.createElement('p');
+                pTag.style.color = "#38bdf8";
+                pTag.style.fontSize = "12px";
+                pTag.innerText = "--- Page " + pNum + " ---";
+                
+                var canvas = document.createElement('canvas');
+                canvas.width = 460;
+                canvas.height = 300;
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = "#1e293b";
+                ctx.fillRect(0, 0, 460, 300);
+                ctx.fillStyle = "#f8fafc";
+                ctx.font = "16px Segoe UI";
+
+                if(!isPdfTranslated) {
+                    ctx.fillText("📄 " + noteTitle + " (English View)", 20, 50);
+                    ctx.fillText("Page " + pNum + " | BCA Master Academy Notes", 20, 90);
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.fillText("Dynamic Watermark & Access Protected", 20, 140);
+                } else {
+                    ctx.fillText("📄 " + noteTitle + " (हिंदी अनुवाद View)", 20, 50);
+                    ctx.fillText("पृष्ठ " + pNum + " | बीसीए मास्टर अकादमी नोट्स", 20, 90);
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.fillText("सुरक्षित एवं प्रमाणित अध्ययन सामग्री", 20, 140);
+                }
+
+                container.appendChild(pTag);
+                container.appendChild(canvas);
+            });
+        }
+
+        function togglePdfTranslation() {
+            isPdfTranslated = !isPdfTranslated;
+            renderPdfCanvas(currentCheckoutNote);
+        }
+
+        function closePdfViewer() {
+            document.getElementById('viewer-container').classList.add('hidden');
+        }
+
+        // ChatGPT AI Assistant (Voice + Text)
+        function sendAiQuery() {
+            let query = document.getElementById('ai-user-input').value.trim();
+            if(!query) return;
+
+            appendChatMsg("You: " + query, "user-msg");
+            document.getElementById('ai-user-input').value = "";
+
+            setTimeout(() => {
+                let reply = getSmartAiResponse(query);
+                appendChatMsg("AI: " + reply, "ai-msg");
+            }, 500);
+        }
+
+        function startVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Voice recognition is not supported in your browser. Please type your doubt.");
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                let speechText = event.results[0][0].transcript;
+                document.getElementById('ai-user-input').value = speechText;
+                sendAiQuery();
+            };
+            alert("🎤 Listening... Speak your doubt now!");
+        }
+
+        function getSmartAiResponse(q) {
+            q = q.toLowerCase();
+            if(q.includes('pointer') || q.includes('point')) {
+                return "Bhai, Pointer ek aisa special variable hota hai jo kisi dusre variable ka memory address store karta hai. Jaise ek ghar ka address slip!";
+            } else if(q.includes('array') || q.includes('loop')) {
+                return "Array ek hi naam se multiple same-type data elements ko line se store karne ke liye use hota hai!";
+            } else {
+                return "Aapka sawal mil gaya hai! Is topic ko aur aasan bhasha mein samajhne ke liye upar diye gaye BCA Master Academy notes padhein.";
+            }
+        }
+
+        function appendChatMsg(text, className) {
+            let history = document.getElementById('chat-history');
+            let div = document.createElement('div');
+            div.className = "chat-msg " + className;
+            div.innerText = text;
+            history.appendChild(div);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // Owner Admin CMS Functions
+        function updateOfferBanner() {
+            let text = document.getElementById('admin-offer-input').value.trim();
+            if(text) {
+                document.getElementById('offer-banner-box').innerHTML = text;
+                alert("Top Offer Banner updated!");
+            }
+        }
+
+        function toggleOfferVisibility() {
+            document.getElementById('offer-banner-box').classList.toggle('hidden');
+        }
+
+        function addNewSectionByAdmin() {
+            let secTitle = document.getElementById('admin-sec-title').value.trim();
+            let noteTitle = document.getElementById('admin-note-title').value.trim();
+            let price = document.getElementById('admin-note-price').value.trim() || "49";
+            let validity = document.getElementById('admin-note-validity').value.trim() || "30";
+
+            if(!secTitle || !noteTitle) { alert("Provide Section and Note titles."); return; }
+
+            let foundSec = sectionsDatabase.find(s => s.sectionName.toLowerCase() === secTitle.toLowerCase());
+            if(foundSec) {
+                foundSec.notes.push({ title: noteTitle, price: price, validityDays: parseInt(validity), qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2] });
+            } else {
+                sectionsDatabase.push({
+                    sectionName: secTitle,
+                    notes: [{ title: noteTitle, price: price, validityDays: parseInt(validity), qr: "https://via.placeholder.com/200?text=BCA+Master+Academy+QR", pages: [1, 2] }]
+                });
+            }
+
+            alert("New Section & Note published with " + validity + " days validity!");
+            loadAdminPdfDropdown();
+        }
+
+        function loadAdminPdfDropdown() {
+            let dropdown = document.getElementById('admin-pdf-select');
+            dropdown.innerHTML = "";
+            
+            sectionsDatabase.forEach(sec => {
+                sec.notes.forEach(note => {
+                    let opt = document.createElement('option');
+                    opt.value = note.title;
+                    opt.innerText = note.title + " (₹" + note.price + " - " + note.validityDays + " Days)";
+                    dropdown.appendChild(opt);
+                });
+            });
+            loadAdminPageManager();
+        }
+
+        document.getElementById('admin-pdf-select').addEventListener('change', loadAdminPageManager);
+
+        function loadAdminPageManager() {
+            let selectedNote = document.getElementById('admin-pdf-select').value;
+            let listContainer = document.getElementById('admin-page-list');
+            listContainer.innerHTML = "";
+
+            let pages = [1, 2];
+            sectionsDatabase.forEach(sec => {
+                sec.notes.forEach(n => {
+                    if(n.title === selectedNote) pages = n.pages;
+                });
+            });
+
+            pages.forEach((p, index) => {
+                let div = document.createElement('div');
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                div.style.alignItems = "center";
+                div.style.background = "#0f172a";
+                div.style.padding = "6px";
+                div.style.marginBottom = "4px";
+                div.style.borderRadius = "4px";
+                div.innerHTML = `<span>Page ${p}</span> <button class="btn-danger" style="width:auto; padding:2px 6px; font-size:11px;" onclick="removePage('${selectedNote}', ${index})">Remove</button>`;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function addPageToSelectedPdf() {
+            let selectedNote = document.getElementById('admin-pdf-select').value;
+            sectionsDatabase.forEach(sec => {
+                sec.notes.forEach(n => {
+                    if(n.title === selectedNote) {
+                        let newPageNum = n.pages.length + 1;
+                        n.pages.push(newPageNum);
+                        alert("New page added to " + selectedNote);
+                        loadAdminPageManager();
+                    }
+                });
+            });
+        }
+
+        function removePage(noteTitle, index) {
+            sectionsDatabase.forEach(sec => {
+                sec.notes.forEach(n => {
+                    if(n.title === noteTitle) {
+                        n.pages.splice(index, 1);
+                        alert("Page removed!");
+                        loadAdminPageManager();
+                    }
+                });
+            });
+        }
+
+        // Change Password Modal
+        function showChangePassModal() { document.getElementById('change-pass-modal').classList.remove('hidden'); }
+        function hideChangePassModal() { document.getElementById('change-pass-modal').classList.add('hidden'); }
+        
+        function updateAccountPassword() {
+            let oldP = document.getElementById('old-pass-input').value;
+            let newP = document.getElementById('change-new-pass').value;
+            if(oldP === registeredUsers[activeUserMobile] && newP) {
+                registeredUsers[activeUserMobile] = newP;
+                alert("Password updated successfully!");
+                hideChangePassModal();
+            } else {
+                alert("Incorrect old password or empty new password!");
+            }
+        }
+
+        // Helpers
+        function showSection(id) {
+            ['login-section', 'notes-section', 'payment-section', 'admin-section'].forEach(sec => {
+                document.getElementById(sec).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideAllLoginSubBoxes() {
+            ['user-pass-box', 'user-register-box', 'admin-password-box', 'forgot-otp-box'].forEach(b => {
+                document.getElementById(b).classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
